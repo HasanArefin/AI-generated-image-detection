@@ -1,0 +1,54 @@
+#----1----libraries
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+
+from sklearn.metrics import (
+    classification_report,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    roc_auc_score,
+    roc_curve
+)
+
+print("Libraries loaded successfully.")
+
+
+
+#----2----Dataset Path
+BASE_DIR = r"C:\Users\atika\anaconda_projects\AI vs Real"
+print("Dataset path:", BASE_DIR)
+
+class_folders = os.listdir(BASE_DIR)
+print("Class folders found:", class_folders)
+
+
+
+#----3----Count Images
+for cls in os.listdir(BASE_DIR):
+    cls_path = os.path.join(BASE_DIR, cls)
+    print(cls, ":", len(os.listdir(cls_path)))
+
+
+#----4----Hyperparameters
+IMAGE_SIZE = (224, 224)
+BATCH_SIZE = 16
+
+EPOCHS_PHASE_1 = 20
+EPOCHS_PHASE_2 = 20
+
+LR_PHASE_1 = 1e-3
+LR_PHASE_2 = 1e-4
+
+SEED = 42
+
