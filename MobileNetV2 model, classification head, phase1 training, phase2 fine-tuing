@@ -1,0 +1,73 @@
+#----7----  MObileNet2 Model
+base_model = MobileNetV2(
+    weights="imagenet",
+    include_top=False,
+    input_shape=(224, 224, 3)
+)
+
+base_model.trainable = False
+print("Base MobileNetV2 model loaded.")
+
+
+#----8---- classification head
+
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+x = Dense(128, activation="relu")(x)
+x = Dropout(0.5)(x)
+output = Dense(1, activation="sigmoid")(x)
+
+model = Model(inputs=base_model.input, outputs=output)
+
+model.compile(
+    optimizer=Adam(learning_rate=LR_PHASE_1),
+    loss="binary_crossentropy",
+    metrics=["accuracy"]
+)
+
+#----9----Phase 1 Training
+
+callbacks_phase1 = [
+    EarlyStopping(monitor="val_loss", patience=3, restore_best_weights=True),
+    ModelCheckpoint("phase1_best.h5", save_best_only=True)
+]
+
+print("Starting Phase 1 training...")
+
+history_phase1 = model.fit(
+    train_generator,
+    validation_data=val_generator,
+    epochs=EPOCHS_PHASE_1,
+    callbacks=callbacks_phase1
+)
+
+print("Phase 1 completed.")
+
+
+print("Model head added and compiled.")
+
+#----10----Phase 2 Fine-Tuning
+for layer in base_model.layers[-30:]:
+    layer.trainable = True
+
+model.compile(
+    optimizer=Adam(learning_rate=LR_PHASE_2),
+    loss="binary_crossentropy",
+    metrics=["accuracy"]
+)
+
+callbacks_phase2 = [
+    EarlyStopping(monitor="val_loss", patience=3, restore_best_weights=True),
+    ModelCheckpoint("phase2_best.h5", save_best_only=True)
+]
+
+print("Starting Phase 2 fine-tuning...")
+
+history_phase2 = model.fit(
+    train_generator,
+    validation_data=val_generator,
+    epochs=EPOCHS_PHASE_2,
+    callbacks=callbacks_phase2
+)
+
+print("Phase 2 completed.")
