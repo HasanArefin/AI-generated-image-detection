@@ -1,0 +1,105 @@
+#----12----Test Evaluation
+
+test_loss, test_accuracy = model.evaluate(test_generator)
+print("✅ Test Accuracy:", test_accuracy)
+
+
+#----11----Training vs validation Accuracy Graph
+
+# Combining Phase 1 + Phase 2 accuracy
+train_acc = history_phase1.history["accuracy"] + history_phase2.history["accuracy"]
+val_acc   = history_phase1.history["val_accuracy"] + history_phase2.history["val_accuracy"]
+
+epochs = range(1, len(train_acc) + 1)
+
+plt.figure(figsize=(6, 4))
+plt.plot(epochs, train_acc, label="Training Accuracy")
+plt.plot(epochs, val_acc, label="Validation Accuracy")
+
+plt.xlabel("Epochs")
+plt.ylabel("Accuracy")
+plt.title("Training vs Validation Accuracy")
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
+plt.show()
+
+
+
+#-----13------ TRAIN vs VALIDATION LOSS graph
+
+# Combining Phase 1 + Phase 2 loss
+train_loss = history_phase1.history["loss"] + history_phase2.history["loss"]
+val_loss   = history_phase1.history["val_loss"] + history_phase2.history["val_loss"]
+
+epochs = range(1, len(train_loss) + 1)
+
+plt.figure(figsize=(6, 4))
+plt.plot(epochs, train_loss, label="Training Loss")
+plt.plot(epochs, val_loss, label="Validation Loss")
+
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.title("Training vs Validation Loss")
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
+plt.show()
+
+
+
+#----12---- Test Predictions
+
+# Ground-truth
+y_true = test_generator.classes
+
+# Model predicted probabilities
+y_prob = model.predict(test_generator).ravel()
+
+# Convert probabilities to binary labels
+y_pred = (y_prob > 0.5).astype(int)
+
+print("Test predictions generated.")
+
+
+#----13----Metrics
+print("Accuracy :", np.mean(y_true == y_pred))
+print("Precision:", precision_score(y_true, y_pred))
+print("Recall   :", recall_score(y_true, y_pred))
+print("F1-score :", f1_score(y_true, y_pred))
+
+print("\n Classification Report: \n")
+print(classification_report(
+    y_true,
+    y_pred,
+    target_names=["Fake", "Real"]
+))
+
+
+#----14----Confusion Matrix
+
+cm = confusion_matrix(y_true, y_pred)
+
+plt.figure(figsize=(5,4))
+plt.imshow(cm, cmap="Blues")
+plt.title("Confusion Matrix")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+
+plt.xticks([0,1], ["Fake", "Real"])
+plt.yticks([0,1], ["Fake", "Real"])
+
+for i in range(2):
+    for j in range(2):
+        plt.text(j, i, cm[i, j], ha="center", va="center", color="white")
+
+plt.show()
+
+
+
+#----16----Save Model
+
+model.save("mobilenet_real_vs_ai_final_model.h5")
+print("Model saved successfully.")
